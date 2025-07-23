@@ -1,0 +1,46 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environment
+venv/
+env/
+ENV/
+.venv/
+
+# PyCharm project settings
+.idea/
+
+# VSCode (nếu bạn đôi khi mở VSCode)
+.vscode/
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# Unit test / coverage
+.coverage
+.tox/
+nosetests.xml
+test-output/
+
+# Logs
+*.log
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# OS system files
+.DS_Store
+Thumbs.db
+
+# Secret keys / environment files (nếu có)
+.env
+.env.*
+
+# DVC files (nếu dùng DVC và muốn tránh cache)
+.cache/
+.dvc/cache/

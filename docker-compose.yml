@@ -1,0 +1,182 @@
+version: '3.8'
+
+services:
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    container_name: zookeeper
+    ports:
+      - "2181:2181"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    networks:
+      - de-network
+
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: kafka
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+      - "29092:29092"
+    environment:
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_INTERNAL:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_INTERNAL://kafka:29092
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,PLAINTEXT_INTERNAL://0.0.0.0:29092
+      KAFKA_BROKER_ID: 2
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+
+    healthcheck:
+      test: [ "CMD", "kafka-topics", "--bootstrap-server", "localhost:9092", "--list" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    networks:
+      - de-network
+
+  control-center:
+    image: confluentinc/cp-enterprise-control-center:7.5.0
+    hostname: control-center
+    container_name: control-center
+    depends_on:
+      kafka:
+        condition: service_healthy
+    ports:
+      - "9021:9021"
+    environment:
+      CONTROL_CENTER_BOOTSTRAP_SERVERS: 'kafka:29092'
+      CONTROL_CENTER_SCHEMA_REGISTRY_URL: "http://schema-registry:8081"
+      CONTROL_CENTER_REPLICATION_FACTOR: 1
+      CONTROL_CENTER_INTERNAL_TOPICS_PARTITIONS: 1
+      CONTROL_CENTER_MONITORING_INTERCEPTOR_TOPIC_PARTITIONS: 1
+      CONFLUENT_METRICS_TOPIC_REPLICATION: 1
+      CONFLUENT_METRICS_ENABLE: 'false'
+      PORT: 9021
+    networks:
+      - de-network
+
+  schema-registry:
+    image: confluentinc/cp-schema-registry:7.5.0
+    container_name: schema-registry
+    depends_on:
+      - kafka
+    ports:
+      - "8081:8081"
+    environment:
+      SCHEMA_REGISTRY_HOST_NAME: schema-registry
+      SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: PLAINTEXT://kafka:9092
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8081/subjects" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    networks:
+      - de-network
+
+  postgres:
+    image: postgres:15
+    container_name: postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 123456
+    volumes:
+      - ./postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - de-network
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin
+    ports:
+      - "5050:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@example.com
+      PGADMIN_DEFAULT_PASSWORD: admin123
+    networks:
+      - de-network
+
+  airflow-webserver:
+    image: apache/airflow:2.8.1-python3.9
+    container_name: airflow-webserver
+    depends_on:
+      - postgres
+    environment:
+      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://postgres:123456@postgres:5432/airflow
+      - AIRFLOW__CORE__EXECUTOR=SequentialExecutor
+      - AIRFLOW__WEBSERVER__SECRET_KEY=mysecret
+      - PYTHONPATH=/opt/airflow
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - ./requirements.txt:/opt/airflow/requirements.txt
+      - ./script/entrypoint.sh:/opt/airflow/script/entrypoint.sh
+      - ./pipelines:/opt/airflow/pipelines
+    entrypoint: ["/opt/airflow/script/entrypoint.sh"]
+    ports:
+      - "8080:8080"
+    networks:
+      - de-network
+
+  airflow-scheduler:
+    image: apache/airflow:2.8.1-python3.9
+    container_name: airflow-scheduler
+    depends_on:
+      - airflow-webserver
+    environment:
+      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://postgres:123456@postgres:5432/airflow
+      - AIRFLOW__WEBSERVER__SECRET_KEY=mysecret
+      - PYTHONPATH=/opt/airflow
+    command: bash -c "pip install -r /opt/airflow/requirements.txt && airflow db upgrade && airflow scheduler"
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - ./requirements.txt:/opt/airflow/requirements.txt
+      - ./script/entrypoint.sh:/opt/airflow/script/entrypoint.sh
+      - ./pipelines:/opt/airflow/pipelines
+    networks:
+      - de-network
+
+  spark-master:
+    image: bitnami/spark:3.5.0
+    container_name: spark-master
+    ports:
+      - "7077:7077"
+      - "9090:8080"
+    command: bin/spark-class org.apache.spark.deploy.master.Master
+    volumes:
+      - ./jars/postgresql-42.2.18.jar:/opt/bitnami/spark/jars/postgresql-42.2.18.jar
+      - ./jars/spark-sql-kafka-0-10_2.12-3.5.0.jar:/opt/bitnami/spark/jars/spark-sql-kafka-0-10_2.12-3.5.0.jar
+      - ./jars/kafka-clients-3.5.0.jar:/opt/bitnami/spark/jars/kafka-clients-3.5.0.jar
+      - ./jars/spark-token-provider-kafka-0-10_2.12-3.5.0.jar:/opt/bitnami/spark/jars/spark-token-provider-kafka-0-10_2.12-3.5.0.jar
+      - ./jars/commons-pool2-2.11.1.jar:/opt/bitnami/spark/jars/commons-pool2-2.11.1.jar
+#      - ./jars:/opt/bitnami/spark/jars
+      - ./realtime_data_processing.py:/opt/bitnami/spark/realtime_data_processing.py
+
+    networks:
+      - de-network
+
+  spark-worker:
+    image: bitnami/spark:3.5.0
+    container_name: spark-worker
+    depends_on:
+      - spark-master
+    command: bin/spark-class org.apache.spark.deploy.worker.Worker spark://spark-master:7077
+    environment:
+      SPARK_MODE: worker
+    volumes:
+      - ./jars/postgresql-42.2.18.jar:/opt/bitnami/spark/jars/postgresql-42.2.18.jar
+      - ./jars/spark-sql-kafka-0-10_2.12-3.5.0.jar:/opt/bitnami/spark/jars/spark-sql-kafka-0-10_2.12-3.5.0.jar
+      - ./jars/kafka-clients-3.5.0.jar:/opt/bitnami/spark/jars/kafka-clients-3.5.0.jar
+      - ./jars/spark-token-provider-kafka-0-10_2.12-3.5.0.jar:/opt/bitnami/spark/jars/spark-token-provider-kafka-0-10_2.12-3.5.0.jar
+      - ./jars/commons-pool2-2.11.1.jar:/opt/bitnami/spark/jars/commons-pool2-2.11.1.jar
+      - ./realtime_data_processing.py:/opt/bitnami/spark/realtime_data_processing.py
+    networks:
+      - de-network
+
+networks:
+  de-network:
+    driver: bridge
