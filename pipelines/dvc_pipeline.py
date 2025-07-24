@@ -145,7 +145,7 @@ def extract_dvc_data():
     skip_count = 0
 
     producer = KafkaProducer(bootstrap_servers=['kafka:9092'], max_block_ms=5000)
-    while skip_count < 500:
+    while skip_count < 600:
         # total_count+100:
 
         try:

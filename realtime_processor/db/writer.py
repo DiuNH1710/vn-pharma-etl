@@ -14,3 +14,4 @@ def write_to_postgres(batch_df, batch_id, postgres_table_name):
         .option("password", "123456") \
         .mode("append") \
         .save()
+

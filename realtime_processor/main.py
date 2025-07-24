@@ -11,7 +11,6 @@ if __name__ == "__main__":
     print("Real-Time Data Processing Application Started ...")
     print(time.strftime("%Y-%m-%d %H:%M:%S"))
 
-    create_table()
 
     spark_conn = create_spark_connection()
     if spark_conn is not None:
@@ -26,6 +25,6 @@ if __name__ == "__main__":
         transformed_df = transform_dvc_data(selection_df)
 
         transformed_df.writeStream \
-            .foreachBatch(lambda batch_df, batch_id: write_to_postgres(batch_df, batch_id, "pharmaceutical_data")) \
+            .foreachBatch(lambda batch_df, batch_id: write_to_postgres(batch_df, batch_id, "pharmaceutical_data_staging")) \
             .start() \
             .awaitTermination()

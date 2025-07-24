@@ -116,6 +116,7 @@ services:
       - ./requirements.txt:/opt/airflow/requirements.txt
       - ./script/entrypoint.sh:/opt/airflow/script/entrypoint.sh
       - ./pipelines:/opt/airflow/pipelines
+      - ./realtime_processor:/opt/airflow/realtime_processor
     entrypoint: ["/opt/airflow/script/entrypoint.sh"]
     ports:
       - "8080:8080"
@@ -137,6 +138,7 @@ services:
       - ./requirements.txt:/opt/airflow/requirements.txt
       - ./script/entrypoint.sh:/opt/airflow/script/entrypoint.sh
       - ./pipelines:/opt/airflow/pipelines
+      - ./realtime_processor:/opt/airflow/realtime_processor
     networks:
       - de-network
 
@@ -187,3 +189,4 @@ networks:
 #docker exec -it spark-master pip install geopy
 #docker exec -it spark-worker pip install geopy
 #docker exec -it spark-master spark-submit --master spark://spark-master:7077 /opt/bitnami/spark/realtime_processor/main.py
+#docker exec -it spark-master python /opt/bitnami/spark/realtime_processor/db/init_db.py

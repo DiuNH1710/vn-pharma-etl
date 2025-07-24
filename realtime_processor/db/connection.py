@@ -1,6 +1,5 @@
 import psycopg2
 
-
 def create_table():
     conn = None
     try:
@@ -9,7 +8,7 @@ def create_table():
             dbname="postgres",
             user="postgres",
             password="123456",
-            host="localhost",
+            host="host.docker.internal",
             port="5432"
         )
         cursor = conn.cursor()
@@ -27,7 +26,7 @@ def create_table():
             nuocSanXuat TEXT,
             congTySanXuatId INTEGER, 
             fullAddress TEXT,
-            soDangKy TEXT ,
+            soDangKy TEXT PRIMARY KEY,
             soDangKyCu TEXT,
             tenThuoc TEXT,
             dotCap TEXT,
@@ -49,10 +48,17 @@ def create_table():
 
         );
         """)
+
+        print("Table main created successfully in PostgreSQL")
+
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS pharmaceutical_data_staging (
+                LIKE pharmaceutical_data INCLUDING ALL
+            );
+        """)
+
+        print("Table staging created successfully in PostgreSQL")
         conn.commit()
-
-        print("Table created successfully in PostgreSQL")
-
     except (Exception, psycopg2.DatabaseError) as error:
         print(f"Error: {error}")
     finally:
