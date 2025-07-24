@@ -1,2 +1,2 @@
 CREATE DATABASE airflow;
-CREATE DATABASE spark_db;
+--CREATE DATABASE spark_db;

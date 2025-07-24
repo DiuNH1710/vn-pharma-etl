@@ -154,7 +154,8 @@ services:
       - ./jars/spark-token-provider-kafka-0-10_2.12-3.5.0.jar:/opt/bitnami/spark/jars/spark-token-provider-kafka-0-10_2.12-3.5.0.jar
       - ./jars/commons-pool2-2.11.1.jar:/opt/bitnami/spark/jars/commons-pool2-2.11.1.jar
 #      - ./jars:/opt/bitnami/spark/jars
-      - ./realtime_data_processing.py:/opt/bitnami/spark/realtime_data_processing.py
+#      - ./realtime_data_processing.py:/opt/bitnami/spark/realtime_data_processing.py
+      - ./realtime_processor:/opt/bitnami/spark/realtime_processor
 
     networks:
       - de-network
@@ -173,10 +174,16 @@ services:
       - ./jars/kafka-clients-3.5.0.jar:/opt/bitnami/spark/jars/kafka-clients-3.5.0.jar
       - ./jars/spark-token-provider-kafka-0-10_2.12-3.5.0.jar:/opt/bitnami/spark/jars/spark-token-provider-kafka-0-10_2.12-3.5.0.jar
       - ./jars/commons-pool2-2.11.1.jar:/opt/bitnami/spark/jars/commons-pool2-2.11.1.jar
-      - ./realtime_data_processing.py:/opt/bitnami/spark/realtime_data_processing.py
+#      - ./realtime_data_processing.py:/opt/bitnami/spark/realtime_data_processing.py
+      - ./realtime_processor:/opt/bitnami/spark/realtime_processor
     networks:
       - de-network
 
 networks:
   de-network:
     driver: bridge
+
+
+#docker exec -it spark-master pip install geopy
+#docker exec -it spark-worker pip install geopy
+#docker exec -it spark-master spark-submit --master spark://spark-master:7077 /opt/bitnami/spark/realtime_processor/main.py
