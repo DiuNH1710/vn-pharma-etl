@@ -31,6 +31,5 @@ def get_drugs_schema():
         StructField("tieuChuanId", StringType(), True),
         StructField("tuoiTho", StringType(), True),
         StructField("creationTime", TimestampType(), True),
-        StructField("lastModificationTime", TimestampType(), True),
-        StructField("crawlTime", TimestampType(), True)
+        StructField("lastModificationTime", TimestampType(), True)
     ])

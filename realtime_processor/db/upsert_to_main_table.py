@@ -46,8 +46,7 @@ def upsert_to_main_table():
                 tieuChuanId = EXCLUDED.tieuChuanId,
                 tuoiTho = EXCLUDED.tuoiTho,
                 creationTime = EXCLUDED.creationTime,
-                lastModificationTime = EXCLUDED.lastModificationTime,
-                crawlTime = EXCLUDED.crawlTime;
+                lastModificationTime = EXCLUDED.lastModificationTime
 
             """)
 

@@ -1,6 +1,5 @@
 import time
 
-from realtime_processor.db.connection import create_table
 from realtime_processor.db.writer import write_to_postgres
 from realtime_processor.kafka.consumer import connect_to_kafka, create_selection_df_from_kafka
 from realtime_processor.spark.connection import create_spark_connection

@@ -2,8 +2,11 @@ import logging
 import requests
 import json
 import time
-from datetime import datetime
+from datetime import datetime, timezone
 from kafka import KafkaProducer
+from dateutil.parser import parse
+
+from manager_crawl_time.manager_time import get_last_crawl_time, update_last_crawl_time
 
 cookies = {
     '_ga': 'GA1.4.1012141175.1739762337',
@@ -82,7 +85,7 @@ def get_data_per_page(skip_count):
         print(f"An error accured: {e}")
 
 
-def format_data(res):
+def format_data(res, last_crawl_time=None):
     list_items = []
     for item in res:
         data = {}
@@ -129,7 +132,13 @@ def format_data(res):
 
         data['creationTime'] = item['creationTime']
         data['lastModificationTime'] = item['lastModificationTime']
-        data['crawlTime'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
+        modification_time = parse(item["lastModificationTime"])
+        modification_time_utc = modification_time.astimezone(timezone.utc)
+
+
+        if last_crawl_time and modification_time_utc <= last_crawl_time:
+            continue
 
         # list_items.append({ item["maTiepNhan"], item["tenCoSoSX"], item["tenThuongMai"]})
         list_items.append(data)
@@ -137,6 +146,11 @@ def format_data(res):
 
 
 def extract_dvc_data():
+    job_name = "extract_data_from_DVC"
+    last_crawl_time = get_last_crawl_time(job_name)
+    if last_crawl_time.tzinfo is None:
+        last_crawl_time = last_crawl_time.replace(tzinfo=timezone.utc)
+
 
     total_count = get_total_count()
     if total_count is None:
@@ -154,7 +168,7 @@ def extract_dvc_data():
                 print(f"Skipping page with skip_count {skip_count} due to failure")
                 time.sleep(5)  # Wait before retrying
                 continue
-            data_formated = format_data(data)
+            data_formated = format_data(data, last_crawl_time)
 
             # all_data.extend(data_formated)
             # Log progress
@@ -178,7 +192,6 @@ def extract_dvc_data():
             continue
 
 
-
-
+    update_last_crawl_time(job_name)
 
 
