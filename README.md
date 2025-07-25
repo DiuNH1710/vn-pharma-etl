@@ -1,15 +1,12 @@
 # 💊 Real-Time Pharmaceutical Data Streaming Pipeline (DVC Version)
 
-This project implements a real-time data ingestion, transformation, and visualization pipeline using the following tools and frameworks:
+This project implements a real-time data ingestion, transformation pipeline using the following tools and frameworks:
 
 - **Apache Airflow** for DAG scheduling
-- **DVC** for versioning and managing data
 - **Apache Kafka** for real-time message streaming
 - **Apache Spark** for stream processing
 - **PostgreSQL** for structured data storage
 - **Docker Compose** for service orchestration
-- **PySpark**, **Pandas**, and **GeoPy** for data manipulation
-- **React.js** (optional frontend dashboard)
 
 ---
 
