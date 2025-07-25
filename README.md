@@ -53,7 +53,7 @@ DataStreamingFromDVCVer2/
 2. **Kafka Producer** (in DAG) streams filtered data in JSON format.
 
 3. **Spark Structured Streaming** (inside `spark/main.py`) reads from Kafka:
-   - Parses the JSON using the schema from `drugs_schema.py`
+   - Parses the JSON using the schema
    - Transforms it into a clean DataFrame
 
 4. **Spark → PostgreSQL**
