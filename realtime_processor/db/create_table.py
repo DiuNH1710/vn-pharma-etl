@@ -52,7 +52,7 @@ def create_table():
 
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS pharmaceutical_data_staging (
-                LIKE pharmaceutical_data INCLUDING ALL
+            LIKE pharmaceutical_data INCLUDING DEFAULTS EXCLUDING CONSTRAINTS
             );
         """)
 

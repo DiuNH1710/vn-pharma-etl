@@ -2,7 +2,7 @@ import logging
 import requests
 import json
 import time
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from kafka import KafkaProducer
 from dateutil.parser import parse
 
@@ -136,9 +136,13 @@ def format_data(res, last_crawl_time=None):
         modification_time = parse(item["lastModificationTime"])
         modification_time_utc = modification_time.astimezone(timezone.utc)
 
-
-        if last_crawl_time and modification_time_utc <= last_crawl_time:
-            continue
+        if last_crawl_time:
+            threshold_time = last_crawl_time - timedelta(days=1)
+            if modification_time_utc <= threshold_time:
+                continue
+        else:
+            # Trường hợp chưa có last_crawl_time thì xử lý sao? Có thể lấy hết
+            pass
 
         # list_items.append({ item["maTiepNhan"], item["tenCoSoSX"], item["tenThuongMai"]})
         list_items.append(data)
@@ -148,8 +152,10 @@ def format_data(res, last_crawl_time=None):
 def extract_dvc_data():
     job_name = "extract_data_from_DVC"
     last_crawl_time = get_last_crawl_time(job_name)
-    if last_crawl_time.tzinfo is None:
-        last_crawl_time = last_crawl_time.replace(tzinfo=timezone.utc)
+
+    if last_crawl_time:
+        if last_crawl_time.tzinfo is None:
+            last_crawl_time = last_crawl_time.replace(tzinfo=timezone.utc)
 
 
     total_count = get_total_count()
@@ -159,7 +165,7 @@ def extract_dvc_data():
     skip_count = 0
 
     producer = KafkaProducer(bootstrap_servers=['kafka:9092'], max_block_ms=5000)
-    while skip_count < 600:
+    while skip_count < total_count+100:
         # total_count+100:
 
         try:

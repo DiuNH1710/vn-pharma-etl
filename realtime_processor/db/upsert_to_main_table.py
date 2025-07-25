@@ -16,8 +16,12 @@ def upsert_to_main_table():
 
         cursor.execute("""
             INSERT INTO pharmaceutical_data AS main
-            SELECT * FROM pharmaceutical_data_staging
+            
+            SELECT DISTINCT ON (soDangKy) * 
+            FROM pharmaceutical_data_staging
+            ORDER BY soDangKy, lastModificationTime DESC
             ON CONFLICT (soDangKy)
+            
             DO UPDATE SET
                 idThuoc = EXCLUDED.idThuoc,
                 phanLoaiThuocEnum = EXCLUDED.phanLoaiThuocEnum,
