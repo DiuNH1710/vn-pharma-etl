@@ -1,4 +1,4 @@
-# 💊 Real-Time Pharmaceutical Data Streaming Pipeline (DVC Version)
+# 💊 Real-Time Pharmaceutical Data Streaming Pipeline
 
 This project implements a real-time data ingestion, transformation pipeline using the following tools and frameworks:
 
