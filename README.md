@@ -14,7 +14,7 @@ This project implements a real-time data ingestion, transformation, and visualiz
 ---
 
 ## 📁 Project Structure
-
+```
 DataStreamingFromDVCVer2/
 │
 ├── dags/ # Airflow DAG definitions
@@ -44,7 +44,7 @@ DataStreamingFromDVCVer2/
 ├── requirements.txt # Python dependencies
 └── .gitignore
 
----
+```
 
 ## 🚀 How It Works
 
