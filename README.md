@@ -1,5 +1,5 @@
 # 💊 Real-Time Pharmaceutical Data Streaming Pipeline
-
+Extracted pharmaceutical registration data from Vietnam’s official drug portal (https://dichvucong.dav.gov.vn/congbothuoc/index)
 This project implements a real-time data ingestion, transformation pipeline using the following tools and frameworks:
 
 - **Apache Airflow** for DAG scheduling
