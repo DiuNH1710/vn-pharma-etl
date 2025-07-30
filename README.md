@@ -1,5 +1,7 @@
 # 💊 Real-Time Pharmaceutical Data Streaming Pipeline
 Extracted pharmaceutical registration data from Vietnam’s official drug portal (https://dichvucong.dav.gov.vn/congbothuoc/index)
+<img width="3684" height="1644" alt="image" src="https://github.com/user-attachments/assets/da3f8393-e469-4270-a3e3-9f4b80c97841" />
+
 
 This project implements a real-time data ingestion, transformation pipeline using the following tools and frameworks:
 
